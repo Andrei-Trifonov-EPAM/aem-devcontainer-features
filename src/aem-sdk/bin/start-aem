@@ -2,9 +2,10 @@
 
 usage() {
     cat <<EOM
-Usage: $(basename $0) <service> 
+Usage: $(basename $0) <service> <stage>
 where 
   <service> is 'dispatcher' or 'author' or 'publish'
+  <stage> is string like 'prerelease' or 'local'
 EOM
     exit 1
 }
@@ -12,6 +13,9 @@ EOM
 [ "${1}" = 'dispatcher' ] && service="${1}"
 [ "${1}" = 'author' ] && service="${1}"
 [ "${1}" = 'publish' ] && service="${1}"
+
+[ -n "${2}" ] && stage="${2}"
+
 [ -z "${service}" ] && usage
 
 source "$(dirname $0)/_globals.sh"
@@ -37,6 +41,7 @@ elif [[ "${service}" == "author" || "${service}" == "publish" ]]; then
     port=$(get_runmode_port ${service})
     jvm_opts="-agentlib:jdwp=transport=dt_socket,address=*:3${port},server=y,suspend=n"
     cq_opts="-nofork -nobrowser -nointeractive"
+    [ -n "${stage}" ] && cq_opts="${cq_opts} -r ${stage}"
     cd "$(dirname ${jar})"
     java ${jvm_opts} -jar ${jar} ${cq_opts}
 fi
