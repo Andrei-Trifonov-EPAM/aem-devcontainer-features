@@ -4,19 +4,31 @@ source "${AEM_SDK_FEATURE_DIR}/options.sh"
 
 function get_runmode_port()
 {
-    local runmode="${1}"
-    if [ "${runmode}" = "publish" ]; then
+    local runmode_primary="${1}"
+    local runmode_secondary="${2}"
+
+    if [ "${runmode_primary}" = "publish" ]; then
         echo "${AEM_SDK_PUBLISH_PORT}"
     else
         echo "${AEM_SDK_AUTHOR_PORT}"
     fi
 }
 
+function get_runmode_dir()
+{
+    local runmode_primary="${1}"
+    local runmode_secondary="${2}"
+
+    echo "${AEM_SDK_FEATURE_DIR}/${runmode_primary}"
+}
+
 function get_runmode_jar()
 {
-    local runmode="${1}"
-    local port=$(get_runmode_port ${runmode})
-    echo "aem-${runmode}-p${port}.jar"
+    local runmode_primary="${1}"
+    local runmode_secondary="${2}"
+    local port=$(get_runmode_port ${runmode_primary})
+    
+    echo "aem-${runmode_primary}${runmode_secondary:+_$runmode_secondary}-p${port}.jar"
 }
 
 function get_aem_sdk_zip()

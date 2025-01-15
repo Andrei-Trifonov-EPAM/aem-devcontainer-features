@@ -3,15 +3,17 @@
 source "$(dirname $0)/_globals.sh"
 
 # script args
-runmode="${1}"
+runmode_primary="${1}"
+runmode_secondary="${2}"
 
 sdkzip=$(get_aem_sdk_zip) || aem_sdk_not_found
 
 # extract and rename the quickstart jar
-runmodedir="${AEM_SDK_FEATURE_DIR}/${runmode}"
-sudo unzip -d ${runmodedir} ${sdkzip} 'aem-sdk-quickstart-*.jar'
-jar_file=$(get_runmode_jar ${runmode})
-sudo find ${runmodedir} -maxdepth 1 -iname 'aem-sdk-quickstart-*.jar' -type f -execdir mv {} ${jar_file} \;
+runmode_dir=$(get_runmode_dir ${runmode_primary} ${runmode_secondary})
+runmode_jar=$(get_runmode_jar ${runmode_primary} ${runmode_secondary})
+
+sudo unzip -d ${runmode_dir} ${sdkzip} 'aem-sdk-quickstart-*.jar'
+sudo find ${runmode_dir} -maxdepth 1 -iname 'aem-sdk-quickstart-*.jar' -type f -execdir mv {} ${runmode_jar} \;
 
 # make user owner of crx-quickstart (it is a volume mount)
-sudo chown ${USER} "${runmodedir}/crx-quickstart"
+sudo chown ${USER} "${runmode_dir}/crx-quickstart"

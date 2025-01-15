@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+source "$(dirname $0)/_globals.sh"
+
+toolsdir="${AEM_SDK_FEATURE_DIR}/dispatcher"
+
+if [[ ! -d ${toolsdir} ]]; then
+    # install it
+    $(dirname $0)/aem-sdk-setup-dispatcher.sh || exit
+fi
+
+# run it
+docker_run.sh src host.docker.internal:${AEM_SDK_PUBLISH_PORT} ${AEM_SDK_DISPATCHER_PORT}
