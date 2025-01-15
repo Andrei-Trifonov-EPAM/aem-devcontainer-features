@@ -3,7 +3,10 @@
 source "$(dirname $0)/_globals.sh"
 
 # script args
-runmode="${1}"
+runmode_primary="${1}"
+runmode_secondary="${2}"
+
+runmode="${runmode_primary}${runmode_secondary:+_$runmode_secondary}"
 
 sdkzip=$(get_aem_sdk_zip) || aem_sdk_not_found
 

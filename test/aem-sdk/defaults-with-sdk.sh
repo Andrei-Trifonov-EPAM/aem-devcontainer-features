@@ -19,12 +19,15 @@ check "dispatcher port default" \
 # Check start-aem in PATH is executable
 check "start-aem is +x" \
     stat -c '%A' $(which start-aem) | grep 'x.*x.*x'
+# Check start-aem-dispatcher in PATH is executable
+check "start-aem-dispatcher is +x" \
+    stat -c '%A' $(which start-aem-dispatcher) | grep 'x.*x.*x'
 # Check that author/publish/dispatcher installs and starts
 check "can install & run author" \
     start-aem author | grep 'hello, world'
 check "can install & run publish" \
     start-aem publish | grep 'hello, world'
 check "can install & run dispatcher" \
-    start-aem dispatcher | grep 'All your base are belong to us'
+    start-aem-dispatcher | grep 'All your base are belong to us'
 
 reportResults

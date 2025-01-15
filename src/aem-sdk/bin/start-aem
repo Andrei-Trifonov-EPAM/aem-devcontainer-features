@@ -2,41 +2,37 @@
 
 usage() {
     cat <<EOM
-Usage: $(basename $0) <service> 
-where 
-  <service> is 'dispatcher' or 'author' or 'publish'
+Usage: $(basename $0) <runmode_primary> <runmode_secondary>
+where
+  <runmode_primary> is 'author' or 'publish'. ('author' is default)
+  <runmode_secondary> is string like 'local' or 'dev' etc (optional)
 EOM
     exit 1
 }
 
-[ "${1}" = 'dispatcher' ] && service="${1}"
-[ "${1}" = 'author' ] && service="${1}"
-[ "${1}" = 'publish' ] && service="${1}"
-[ -z "${service}" ] && usage
+runmode_primary="${1:-author}" # default = "start"
+runmode_secondary="${2}"       # default = ""
 
-source "$(dirname $0)/_globals.sh"
+case "$runmode_primary" in author | publish)
+    # Valid, do nothing
+    ;;
+*)
+    echo "Error: Invalid runmode_primary: '$runmode_primary'"
+    usage
+    exit 1
+    ;;
+esac
 
-if [[ "${service}" == "dispatcher" ]]; then
+jar="${AEM_SDK_FEATURE_DIR}/${runmode_primary}/$(get_runmode_jar ${runmode_primary} ${runmode_secondary})"
 
-    toolsdir="${AEM_SDK_FEATURE_DIR}/dispatcher"
-    if [[ ! -d ${toolsdir} ]]; then
-        # install it
-        $(dirname $0)/aem-sdk-setup-dispatcher.sh || exit
-    fi
-    # run it
-    docker_run.sh src host.docker.internal:${AEM_SDK_PUBLISH_PORT} ${AEM_SDK_DISPATCHER_PORT}
-
-elif [[ "${service}" == "author" || "${service}" == "publish" ]]; then
-
-    jar="${AEM_SDK_FEATURE_DIR}/${service}/$(get_runmode_jar ${service})"
-    if [[ ! -f ${jar} ]]; then
-        # install it
-        $(dirname $0)/aem-sdk-setup-service.sh ${service} || exit
-    fi
-    # run it
-    port=$(get_runmode_port ${service})
-    jvm_opts="-agentlib:jdwp=transport=dt_socket,address=*:3${port},server=y,suspend=n"
-    cq_opts="-nofork -nobrowser -nointeractive"
-    cd "$(dirname ${jar})"
-    java ${jvm_opts} -jar ${jar} ${cq_opts}
+if [[ ! -f ${jar} ]]; then
+    # install it
+    $(dirname $0)/aem-sdk-setup-service.sh ${runmode_primary} || exit
 fi
+
+# run it
+port=$(get_runmode_port ${runmode_primary})
+jvm_opts="-agentlib:jdwp=transport=dt_socket,address=*:3${port},server=y,suspend=n"
+cq_opts="-nofork -nobrowser -nointeractive"
+cd "$(dirname ${jar})"
+java ${jvm_opts} -jar ${jar} ${cq_opts}
